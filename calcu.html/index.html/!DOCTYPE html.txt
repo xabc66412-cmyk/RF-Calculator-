@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RF Calculator</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body { font-family: Arial; padding:20px; max-width:400px; }
+input,button { width:100%; padding:10px; margin:5px 0; }
+.history-item { background:#eee; padding:8px; margin-top:5px; display:flex; justify-content:space-between; }
+.del { color:red; cursor:pointer; }
+</style>
+</head>
+
+<body>
+<h2>RF Calculator</h2>
+
+<input id="golai" placeholder="Golai (2 digit)">
+<input id="lomba" placeholder="Lomba">
+
+<button onclick="calculate()">Calculate</button>
+<h3>Result: <span id="result">0.00</span></h3>
+
+<hr>
+<div id="history"></div>
+<button onclick="sumHistory()">Sum All</button>
+<div>Total: <span id="total">0.00</span></div>
+
+<script>
+let historyList=[];
+
+golai.oninput=()=>{ if(golai.value.length>=2) lomba.focus(); }
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js');
+}
+
+function calculate(){
+  let g=+golai.value,l=+lomba.value;
+  if(!g||!l) return;
+  let ans=((g*g*l)/2304).toFixed(2);
+  result.innerText=ans;
+  historyList.push({g,l,ans});
+  show();
+  golai.value=lomba.value="";
+  golai.focus();
+}
+
+function show(){
+  history.innerHTML="";
+  historyList.forEach((i,n)=>{
+    history.innerHTML+=`
+    <div class="history-item">
+      <span>${n+1}. ${i.g}x${i.l} = ${i.ans}</span>
+      <span class="del" onclick="del(${n})">X</span>
+    </div>`;
+  });
+}
+
+function del(i){ historyList.splice(i,1); show(); sumHistory(); }
+function sumHistory(){
+  total.innerText=historyList.reduce((s,i)=>s+ +i.ans,0).toFixed(2);
+}
+</script>
+</body>
+</html>
